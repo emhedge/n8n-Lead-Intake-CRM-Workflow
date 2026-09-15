@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1B3A5C;
+    --ink-soft: #4A6178;
+    --paper: #EEF2F6;
+    --card: #FFFFFF;
+    --line: #C7D2DC;
+    --signal: #FF6B35;
+    --signal-dark: #C94E1F;
+    --ok: #1F8A5C;
+    --err: #C0392B;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: var(--paper);
+    background-image: radial-gradient(circle, #D7E0E9 1px, transparent 1px);
+    background-size: 22px 22px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  .card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 40px 36px 32px;
+    position: relative;
+  }
+  .card::before, .card::after,
+  .corner-br::before, .corner-br::after {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-color: var(--ink);
+    border-style: solid;
+  }
+  .card::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  .card::after { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+  .corner-br { position: absolute; inset: 0; }
+  .corner-br::before { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+  .corner-br::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--signal-dark);
+    margin: 0 0 10px;
+  }
+  h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    line-height: 1.25;
+  }
+  .sub {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin: 0 0 28px;
+  }
+
+  .field { margin-bottom: 18px; }
+  .field-label {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+  }
+  .field-label .idx { color: var(--signal-dark); }
+  input, textarea {
+    width: 100%;
+    border: none;
+    border-bottom: 1.5px solid var(--line);
+    background: transparent;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    padding: 8px 2px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  input:focus, textarea:focus { border-bottom-color: var(--signal); }
+  textarea { resize: vertical; min-height: 64px; }
+
+  button {
+    margin-top: 8px;
+    width: 100%;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 13px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  button:hover { background: var(--signal-dark); }
+  button:disabled { background: var(--line); cursor: default; }
+
+  .wire {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .track {
+    flex: 1;
+    height: 2px;
+    background-image: linear-gradient(to right, var(--line) 50%, transparent 50%);
+    background-size: 8px 2px;
+    position: relative;
+    overflow: visible;
+  }
+  .pulse {
+    position: absolute;
+    top: -3px;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--signal);
+    opacity: 0;
+  }
+  .pulse.go {
+    animation: travel 0.9s ease-in-out forwards;
+  }
+  @keyframes travel {
+    0% { left: 0; opacity: 1; }
+    90% { opacity: 1; }
+    100% { left: calc(100% - 8px); opacity: 1; }
+  }
+  .node {
+    width: 12px;
+    height: 12px;
+    background: var(--card);
+    border: 2px solid var(--line);
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+  .node.lit { border-color: var(--ok); background: var(--ok); }
+  .node.err { border-color: var(--err); background: var(--err); }
+
+  .status {
+    margin-top: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    min-height: 16px;
+    color: var(--ink-soft);
+  }
+  .status.ok { color: var(--ok); }
+  .status.err { color: var(--err); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse.go { animation: none; opacity: 1; left: calc(100% - 8px); }
+  }
+</style>
+</head>
+<body>
+
+<form class="card" id="leadForm">
+  
+  <p class="eyebrow">// lead intake</p>
+  <h1>Send us a signal</h1>
+  <p class="sub">Fill this in and it goes straight to our workflow — no queue, no delay.</p>
+
+  <div class="field">
+    <label class="field-label" for="name"><span class="idx">01</span> Name</label>
+    <input type="text" id="name" name="name" required>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="email"><span class="idx">02</span> Email</label>
+    <input type="email" id="email" name="email" required>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="company"><span class="idx">03</span> Company</label>
+    <input type="text" id="company" name="company" required>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="message"><span class="idx">04</span> Message</label>
+    <textarea id="message" name="message"></textarea>
+  </div>
+
+  <button type="submit" id="submitBtn">Transmit &rarr;</button>
+
+  <div class="wire">
+    <div class="track"><div class="pulse" id="pulse"></div></div>
+    <div class="node" id="node"></div>
+  </div>
+  <p class="status" id="status"></p>
+</form>
+
+<script>
+  // Update this once your n8n webhook node gives you the production URL + path.
+  const WEBHOOK_URL = "https://fraction-yoyo-unloader.ngrok-free.dev/webhook/new-lead";
+
+  const form = document.getElementById("leadForm");
+  const btn = document.getElementById("submitBtn");
+  const pulse = document.getElementById("pulse");
+  const node = document.getElementById("node");
+  const status = document.getElementById("status");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    node.className = "node";
+    pulse.className = "pulse go";
+    status.className = "status";
+    status.textContent = "> connecting...";
+
+    const payload = {
+      name: document.getElementById("name").value,
+      email: document.getElementById("email").value,
+      company: document.getElementById("company").value,
+      message: document.getElementById("message").value
+    };
+
+    try {
+      const res = await fetch(WEBHOOK_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true"
+  },
+  body: JSON.stringify(payload)
+});
+
+      setTimeout(() => {
+        if (res.ok) {
+          node.className = "node lit";
+          status.className = "status ok";
+          status.textContent = "> signal received";
+          form.reset();
+        } else {
+          node.className = "node err";
+          status.className = "status err";
+          status.textContent = "> transmission failed: " + res.status;
+        }
+        btn.disabled = false;
+      }, 900);
+
+    } catch (err) {
+      setTimeout(() => {
+        node.className = "node err";
+        status.className = "status err";
+        status.textContent = "> transmission failed: " + err.message;
+        btn.disabled = false;
+      }, 900);
+    }
+  });
+</script>
+
+</body>
+</html>

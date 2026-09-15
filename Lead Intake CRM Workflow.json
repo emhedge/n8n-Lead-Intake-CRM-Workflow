@@ -1,0 +1,775 @@
+{
+  "name": "Lead Intake CRM Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "48772887-a6c1-4453-9b49-362db74df5ef",
+      "name": "Lead Webhook",
+      "webhookId": "3bc0fa59-7143-4f03-933f-b6a9b4c013f2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f2d98c16-6540-43fb-93ee-c0e25fb5f4e2",
+              "name": "name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "b3c6ee6a-28e3-4e27-812b-23e915494f07",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "91d9c3f9-f946-4196-be99-bc85084f1224",
+              "name": "company",
+              "value": "={{ $json.body.company }}",
+              "type": "string"
+            },
+            {
+              "id": "87b46732-5357-4a09-8d65-053ca520d2ba",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "c40c67ad-a73b-4248-b15f-b432ad5390b9",
+              "name": "source",
+              "value": "webhook-form",
+              "type": "string"
+            },
+            {
+              "id": "8ac94018-56ad-46b2-a96b-f01aa84d9c6f",
+              "name": "submitted_at",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "2caef8c8-9a6c-4505-9b2c-2651bed5e052",
+      "name": "Map & Timestamp Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cb145f1d-d811-4b90-8fdb-53d0e32187be",
+              "leftValue": "={{ $json.company }}",
+              "rightValue": "\"\"",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "12ef5308-caed-4f75-8a31-588c10ec7884",
+              "leftValue": "={{ $json.company }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "29fe7c57-8091-4aea-9990-955545e99758",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "\"\"",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "a40db0ef-241b-40a2-b6ad-151f69ccf252",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b3e93e56-46a9-4d10-9654-4b648ed5de34",
+      "name": "Validate Required Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ze67C8HiurWdIjn2A8KKaoxPFV2yB-vXFguEj2AuwMw",
+          "mode": "list",
+          "cachedResultName": "n8n Webhook Workflow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ze67C8HiurWdIjn2A8KKaoxPFV2yB-vXFguEj2AuwMw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 121440171,
+          "mode": "list",
+          "cachedResultName": "leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ze67C8HiurWdIjn2A8KKaoxPFV2yB-vXFguEj2AuwMw/edit#gid=121440171"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "email",
+              "lookupValue": "={{ $json.email }}"
+            },
+            {
+              "lookupColumn": "name",
+              "lookupValue": "={{ $json.name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        0
+      ],
+      "id": "11bfc538-fb42-40f8-89a5-ea6687d7b2ad",
+      "name": "Lookup Existing Leads",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bwHdMRglmJ6zM7BS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all();\nconst matchedRows = rows.filter(row => row.json.row_number !== undefined);\nreturn [{\n  json: {\n    rowCount: matchedRows.length,\n    isDuplicate: matchedRows.length > 0\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        0
+      ],
+      "id": "2d27f312-8714-4112-91e2-af14f76af56f",
+      "name": "Check Duplicate"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "76f09d63-458f-4fa5-9b27-4494f3752043",
+              "leftValue": "={{ $json.isDuplicate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        0
+      ],
+      "id": "7184a143-d4c6-4483-b06b-eaf8cd0f3406",
+      "name": "Is Duplicate?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0497b8da-1e97-41e0-8127-aa008bea0545",
+              "name": "status",
+              "value": "duplicate",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1344,
+        -192
+      ],
+      "id": "0069a3a8-6e9f-42b6-8d7d-1c42d00afb3b",
+      "name": "Mark as Duplicate"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"duplicate\",\n  \"message\": \"This lead already exists in our system.\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1568,
+        -192
+      ],
+      "id": "f5c54dfd-789a-4b3c-b7f1-1d5ec84e2cb1",
+      "name": "Respond: Duplicate"
+    },
+    {
+      "parameters": {
+        "url": "https://companyenrichment.abstractapi.com/v1/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "api_key",
+              "value": "a798b3b3305d4e44afb88329ee4b8b38"
+            },
+            {
+              "name": "domain",
+              "value": "={{ $('Map & Timestamp Fields').first().json.email.split('@')[1] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "d81632b7-2b88-457c-8ce5-a80f33f8ad0f",
+      "name": "Enrich Company Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $('Map & Timestamp Fields').first().json;\nconst enrichment = $input.first().json;\n\nreturn [{\n  json: {\n    name: lead.name,\n    email: lead.email,\n    company: lead.company,\n    message: lead.message,\n    source: lead.source,\n    submitted_at: lead.submitted_at,\n    company_domain: lead.email.split('@')[1],\n    enriched_industry: enrichment.industry || null,\n    enriched_employees: enrichment.employees_count || null,\n    enriched_country: enrichment.country || null,\n    enriched_linkedin: enrichment.linkedin_url || null\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "e5870f9f-b4b7-4d49-a469-16449d261ea4",
+      "name": "Merge Lead & Enrichment Data"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1ze67C8HiurWdIjn2A8KKaoxPFV2yB-vXFguEj2AuwMw",
+          "mode": "list",
+          "cachedResultName": "n8n Webhook Workflow",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ze67C8HiurWdIjn2A8KKaoxPFV2yB-vXFguEj2AuwMw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 121440171,
+          "mode": "list",
+          "cachedResultName": "leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ze67C8HiurWdIjn2A8KKaoxPFV2yB-vXFguEj2AuwMw/edit#gid=121440171"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "lead_id": "={{ 'L' + Date.now() }}",
+            "name": "={{ $json.name }}",
+            "email": "={{ $json.email }}",
+            "company": "={{ $json.company }}",
+            "message": "={{ $json.message }}",
+            "source": "={{ $json.source }}",
+            "submitted_at": "={{ $json.submitted_at }}",
+            "status": "new",
+            "enriched_industry": "={{ $json.enriched_industry }}",
+            "enriched_employees": "={{ $json.enriched_employees }}",
+            "enriched_country": "={{ $json.enriched_country }}",
+            "enriched_linkedin": "={{ $json.enriched_linkedin }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "lead_id",
+              "displayName": "lead_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "company",
+              "displayName": "company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "submitted_at",
+              "displayName": "submitted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "enriched_industry",
+              "displayName": "enriched_industry",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "enriched_employees",
+              "displayName": "enriched_employees",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "enriched_country",
+              "displayName": "enriched_country",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "enriched_linkedin",
+              "displayName": "enriched_linkedin",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1792,
+        0
+      ],
+      "id": "d1fbe840-4fff-4809-a1b4-c8c63825e24b",
+      "name": "Store Lead in Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "bwHdMRglmJ6zM7BS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "-5559726405",
+        "text": "=🔔 New lead received!\n\nName: {{ $('Map & Timestamp Fields').first().json.name }}\nEmail: {{ $('Map & Timestamp Fields').first().json.email }}\nCompany: {{ $('Map & Timestamp Fields').first().json.company }}\nIndustry: {{ $json.enriched_industry }}\nEmployees: {{ $json.enriched_employees }}\nCountry: {{ $json.enriched_country }}\n\nMessage: {{ $('Map & Timestamp Fields').first().json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2016,
+        0
+      ],
+      "id": "79aeda73-8d22-48b8-bfee-65bd56a67a46",
+      "name": "Notify Team (Telegram)",
+      "webhookId": "a95b135a-d72d-46c0-ba66-20e6fe6c82fd",
+      "credentials": {
+        "telegramApi": {
+          "id": "Mpdyvsupc1NNImTR",
+          "name": "n8n Leads Notification Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "emh5652@gmail.com",
+        "toEmail": "={{ $('Map & Timestamp Fields').first().json.email }}",
+        "subject": "We received your message",
+        "html": "=Hi {{ $('Map & Timestamp Fields').first().json.name }},\n\nThanks for reaching out! We've received your message and will be in touch shortly.\n\nBest,\nThe Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2240,
+        0
+      ],
+      "id": "857cb026-e59b-4335-baa9-efe543254cc4",
+      "name": "Send an Email",
+      "webhookId": "7b63ab9a-3479-4310-80bf-961c64152881",
+      "credentials": {
+        "smtp": {
+          "id": "maqxkbKnJkqog0C2",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"success\",\n  \"message\": \"Lead received successfully.\"\n}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2464,
+        0
+      ],
+      "id": "b42faa16-fdab-4b31-ade7-4dfe0c1d77f5",
+      "name": "Respond: Success"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"error\",\n  \"message\": \"Missing required fields: email and company are required.\"\n}",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        272
+      ],
+      "id": "7a023e05-c5c5-45a4-996d-90b600cd66d8",
+      "name": "Respond: Validation Error"
+    },
+    {
+      "parameters": {
+        "content": "// Lead Intake CRM Workflow: validates, dedupes, enriches, and stores inbound leads",
+        "height": 112,
+        "width": 288
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -16,
+        -160
+      ],
+      "typeVersion": 1,
+      "id": "2d6cd53c-ed70-4a1b-adfb-4c7878292982",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "// Duplicate path: logs and responds gracefully",
+        "height": 96
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1344,
+        -336
+      ],
+      "typeVersion": 1,
+      "id": "6909b15c-492a-4a3a-9008-46d78da0fbe3",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "// Error handler: catches unexpected failures and notifies via Telegram",
+        "height": 112
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        400,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "1ae0157d-f669-443b-849c-1728b4704ed2",
+      "name": "Sticky Note2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Lead Webhook": {
+      "main": [
+        [
+          {
+            "node": "Map & Timestamp Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map & Timestamp Fields": {
+      "main": [
+        [
+          {
+            "node": "Validate Required Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Required Fields": {
+      "main": [
+        [
+          {
+            "node": "Lookup Existing Leads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond: Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Existing Leads": {
+      "main": [
+        [
+          {
+            "node": "Check Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Is Duplicate?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Duplicate?": {
+      "main": [
+        [
+          {
+            "node": "Mark as Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enrich Company Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark as Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Respond: Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich Company Data": {
+      "main": [
+        [
+          {
+            "node": "Merge Lead & Enrichment Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Lead & Enrichment Data": {
+      "main": [
+        [
+          {
+            "node": "Store Lead in Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Lead in Sheet": {
+      "main": [
+        [
+          {
+            "node": "Notify Team (Telegram)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Team (Telegram)": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send an Email": {
+      "main": [
+        [
+          {
+            "node": "Respond: Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "e9HsEIssvPrAGd3t",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "b70a7088-8310-4eac-9991-8ff56bc7b574",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0d0ebb4ea9c741622f63617446f82ec1a949ee25ecde3a725f2c58d7377bdab9"
+  },
+  "nodeGroups": [],
+  "id": "Nh4xUihtsYmmzmH2",
+  "tags": []
+}
