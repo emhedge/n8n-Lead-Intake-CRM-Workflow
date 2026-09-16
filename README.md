@@ -139,7 +139,26 @@ ngrok http 5678
 
 Note your ngrok URL — update `WEBHOOK_URL` in `lead-intake-form.html` to match.
 
-### 3. Configure credentials in n8n
+### 3. Configure secrets
+
+Copy the example config file and fill in your values:
+
+```bash
+cp config.example.js config.js
+```
+
+Edit `config.js` with your actual webhook URL and secret token:
+
+```javascript
+window.CONFIG = {
+  WEBHOOK_URL: "https://your-ngrok-url/webhook/new-lead",
+  WEBHOOK_SECRET: "your-secret-token"
+};
+```
+
+> ⚠️ `config.js` is gitignored and should never be committed. All real secrets stay local.
+
+### 4. Configure credentials in n8n
 
 | Credential | Type | Notes |
 |---|---|---|
@@ -148,7 +167,7 @@ Note your ngrok URL — update `WEBHOOK_URL` in `lead-intake-form.html` to match
 | Telegram | Telegram Bot API | Bot token from @BotFather |
 | Gmail | SMTP | Host: `smtp.gmail.com`, Port: `465`, use App Password |
 
-### 4. Import the workflow
+### 5. Import the workflow
 
 1. Open n8n at `http://localhost:5678`
 2. Go to **Workflows → Import**
@@ -156,7 +175,7 @@ Note your ngrok URL — update `WEBHOOK_URL` in `lead-intake-form.html` to match
 4. Update all credentials in each node
 5. Activate the workflow
 
-### 5. Serve the form
+### 6. Serve the form
 
 ```bash
 cd /path/to/form
