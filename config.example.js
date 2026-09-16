@@ -1,0 +1,4 @@
+const CONFIG = {
+  WEBHOOK_URL: "YOUR_NGROK_URL/webhook/new-lead",
+  WEBHOOK_SECRET: "YOUR_SECRET_HERE"
+};

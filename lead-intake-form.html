@@ -179,6 +179,7 @@
     .pulse.go { animation: none; opacity: 1; left: calc(100% - 8px); }
   }
 </style>
+<script src="config.js"></script>
 </head>
 <body>
 
@@ -190,17 +191,17 @@
 
   <div class="field">
     <label class="field-label" for="name"><span class="idx">01</span> Name</label>
-    <input type="text" id="name" name="name" required>
+    <input type="text" id="name" name="name" >
   </div>
 
   <div class="field">
     <label class="field-label" for="email"><span class="idx">02</span> Email</label>
-    <input type="email" id="email" name="email" required>
+    <input type="email" id="email" name="email" >
   </div>
 
   <div class="field">
     <label class="field-label" for="company"><span class="idx">03</span> Company</label>
-    <input type="text" id="company" name="company" required>
+    <input type="text" id="company" name="company" >
   </div>
 
   <div class="field">
@@ -219,7 +220,8 @@
 
 <script>
   // Update this once your n8n webhook node gives you the production URL + path.
-  const WEBHOOK_URL = "https://fraction-yoyo-unloader.ngrok-free.dev/webhook/new-lead";
+  const WEBHOOK_URL = window.CONFIG?.WEBHOOK_URL || "YOUR_WEBHOOK_URL_HERE";
+  const SECRET = window.CONFIG?.WEBHOOK_SECRET || "";
 
   const form = document.getElementById("leadForm");
   const btn = document.getElementById("submitBtn");
@@ -247,7 +249,8 @@
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true"
+    "ngrok-skip-browser-warning": "true",
+    "x-webhook-secret": SECRET
   },
   body: JSON.stringify(payload)
 });
