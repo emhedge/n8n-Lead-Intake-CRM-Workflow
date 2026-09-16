@@ -6,6 +6,12 @@ Built as a portfolio project to demonstrate real-world n8n workflow automation s
 
 ---
 
+## Demo
+
+[![Demo Video](https://img.youtube.com/vi/5_fdfmBn4ts/0.jpg)](https://youtu.be/5_fdfmBn4ts)
+
+---
+
 ## What it does
 
 1. **Receives** a lead submission via HTTP POST webhook from an HTML form
